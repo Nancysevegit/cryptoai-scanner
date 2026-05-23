@@ -1,1 +1,40 @@
-[]
+[
+  {
+    "id": 1779568333217,
+    "ts": 1779568333217,
+    "pair": "BNB",
+    "dir": "long",
+    "verdict": "LONG",
+    "title": "LONG — ALTA CONFIANZA",
+    "conf": 92,
+    "entryPrice": 652.66,
+    "stopLoss": 642.8701,
+    "target1": 668.9764999999999,
+    "target2": 678.7664,
+    "riskPct": 2,
+    "patterns": [
+      {
+        "name": "Martillo",
+        "type": "bull",
+        "weight": 3
+      },
+      {
+        "name": "Pin Bar Alcista",
+        "type": "bull",
+        "weight": 3
+      },
+      {
+        "name": "Engulfing Alcista",
+        "type": "bull",
+        "weight": 2
+      }
+    ],
+    "auditQuality": "ALTA",
+    "confluence": "5/5",
+    "time": "08:32 p. m.",
+    "source": "cloud",
+    "result": null,
+    "exitPrice": null,
+    "pnlPct": null
+  }
+]
