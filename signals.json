@@ -35,6 +35,7 @@
     "source": "cloud",
     "result": null,
     "exitPrice": null,
-    "pnlPct": null
+    "pnlPct": null,
+    "pendingVerify": true
   }
 ]
