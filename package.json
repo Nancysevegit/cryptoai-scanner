@@ -1,0 +1,9 @@
+{
+  "name": "cryptoai-scanner",
+  "version": "1.0.0",
+  "description": "CryptoAI automatic market scanner",
+  "main": "scanner.js",
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  }
+}
