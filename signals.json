@@ -1,5 +1,99 @@
 [
   {
+    "id": 1779637856334,
+    "ts": 1779637856334,
+    "pair": "BTC",
+    "dir": "short",
+    "verdict": "SHORT",
+    "title": "SHORT — MEDIA CONFIANZA",
+    "conf": 85,
+    "entryPrice": 76364.9,
+    "stopLoss": 77510.37349999999,
+    "target1": 74455.7775,
+    "target2": 73310.30399999999,
+    "riskPct": 1,
+    "patterns": [
+      {
+        "name": "Doji",
+        "type": "neutral",
+        "weight": 3
+      },
+      {
+        "name": "Pin Bar Bajista",
+        "type": "bear",
+        "weight": 3
+      },
+      {
+        "name": "Engulfing Bajista",
+        "type": "bear",
+        "weight": 4
+      }
+    ],
+    "auditQuality": "MEDIA",
+    "confluence": "5/5",
+    "time": "03:50 p. m.",
+    "source": "cloud",
+    "result": null,
+    "exitPrice": null,
+    "pnlPct": null
+  },
+  {
+    "id": 1779637859033,
+    "ts": 1779637859033,
+    "pair": "XRP",
+    "dir": "short",
+    "verdict": "SHORT",
+    "title": "SHORT — MEDIA CONFIANZA",
+    "conf": 82,
+    "entryPrice": 1.34736,
+    "stopLoss": 1.3675703999999997,
+    "target1": 1.3136759999999998,
+    "target2": 1.2934655999999998,
+    "riskPct": 1,
+    "patterns": [
+      {
+        "name": "Engulfing Bajista",
+        "type": "bear",
+        "weight": 4
+      }
+    ],
+    "auditQuality": "MEDIA",
+    "confluence": "5/5",
+    "time": "03:50 p. m.",
+    "source": "cloud",
+    "result": null,
+    "exitPrice": null,
+    "pnlPct": null
+  },
+  {
+    "id": 1779637859670,
+    "ts": 1779637859670,
+    "pair": "DOGE",
+    "dir": "short",
+    "verdict": "SHORT",
+    "title": "SHORT — MEDIA CONFIANZA",
+    "conf": 80,
+    "entryPrice": 0.1018739,
+    "stopLoss": 0.10340200849999999,
+    "target1": 0.0993270525,
+    "target2": 0.097798944,
+    "riskPct": 1,
+    "patterns": [
+      {
+        "name": "Engulfing Bajista",
+        "type": "bear",
+        "weight": 4
+      }
+    ],
+    "auditQuality": "MEDIA",
+    "confluence": "5/5",
+    "time": "03:50 p. m.",
+    "source": "cloud",
+    "result": null,
+    "exitPrice": null,
+    "pnlPct": null
+  },
+  {
     "id": 1779568333217,
     "ts": 1779568333217,
     "pair": "BNB",
