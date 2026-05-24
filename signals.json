@@ -35,7 +35,8 @@
     "source": "cloud",
     "result": null,
     "exitPrice": null,
-    "pnlPct": null
+    "pnlPct": null,
+    "pendingVerify": true
   },
   {
     "id": 1779637859033,
@@ -63,7 +64,8 @@
     "source": "cloud",
     "result": null,
     "exitPrice": null,
-    "pnlPct": null
+    "pnlPct": null,
+    "pendingVerify": true
   },
   {
     "id": 1779637859670,
@@ -91,7 +93,8 @@
     "source": "cloud",
     "result": null,
     "exitPrice": null,
-    "pnlPct": null
+    "pnlPct": null,
+    "pendingVerify": true
   },
   {
     "id": 1779568333217,
