@@ -1,5 +1,43 @@
 [
   {
+    "id": 1779747451216,
+    "ts": 1779747451216,
+    "pair": "XRP",
+    "dir": "short",
+    "verdict": "SHORT",
+    "title": "SHORT — MEDIA CONFIANZA",
+    "conf": 79,
+    "entryPrice": 1.35328,
+    "stopLoss": 1.3735792,
+    "target1": 1.319448,
+    "target2": 1.2991488,
+    "riskPct": 1,
+    "patterns": [
+      {
+        "name": "Pin Bar Alcista",
+        "type": "bull",
+        "weight": 3
+      },
+      {
+        "name": "Engulfing Bajista",
+        "type": "bear",
+        "weight": 3
+      },
+      {
+        "name": "Pin Bar Bajista",
+        "type": "bear",
+        "weight": 2
+      }
+    ],
+    "auditQuality": "MEDIA",
+    "confluence": "5/5",
+    "time": "10:17 p. m.",
+    "source": "cloud",
+    "result": null,
+    "exitPrice": null,
+    "pnlPct": null
+  },
+  {
     "id": 1779637856334,
     "ts": 1779637856334,
     "pair": "BTC",
