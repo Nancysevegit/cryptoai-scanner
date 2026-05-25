@@ -164,7 +164,20 @@ function buildDecision(a1m, a5m, a1h, a4h, a1d, price, audit) {
   const scS = a1m.score * 0.4 + a5m.score * 0.4 + a1h.score * 0.2;
   const swS = a1h.score * 0.2 + a4h.score * 0.45 + a1d.score * 0.35;
   const tot = scS + swS;
-  const verdict = tot > 1.5 ? 'LONG' : tot < -1.5 ? 'SHORT' : 'ESPERAR';
+  let verdict = tot > 1.5 ? 'LONG' : tot < -1.5 ? 'SHORT' : 'ESPERAR';
+
+  // ═══ FILTRO DE TENDENCIA — operar a favor del mercado ═══
+  const macroScore = (a4h.score * 0.5 + a1d.score * 0.5);
+  const macroCtx = macroScore > 1 ? 'bull' : macroScore < -1 ? 'bear' : 'neutral';
+  const signalConf = Math.min(Math.abs(tot) / 8 * 100, 85);
+
+  if(macroCtx === 'bull' && verdict === 'SHORT' && signalConf < 90) verdict = 'ESPERAR';
+  if(macroCtx === 'bear' && verdict === 'LONG' && signalConf < 90) verdict = 'ESPERAR';
+  if(macroCtx === 'neutral'){
+    const dirs = [a1m.dir, a5m.dir, a1h.dir, a4h.dir, a1d.dir];
+    const maxAlign = Math.max(dirs.filter(d=>d==='L').length, dirs.filter(d=>d==='S').length);
+    if(maxAlign < 5) verdict = 'ESPERAR';
+  }
   const prob = Math.min(Math.max(Math.abs(tot) / 8 * 100, 40), 92);
   const riskPct = audit.quality === 'ALTA' ? 2 : 1;
   const isL = verdict === 'LONG';
