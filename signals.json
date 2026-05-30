@@ -1,5 +1,71 @@
 [
   {
+    "id": 1780131883564,
+    "ts": 1780131883564,
+    "pair": "ETH",
+    "dir": "short",
+    "verdict": "SHORT",
+    "title": "SHORT — MEDIA CONFIANZA",
+    "conf": 92,
+    "entryPrice": 2011.29,
+    "stopLoss": 2041.4593499999999,
+    "target1": 1961.00775,
+    "target2": 1930.8383999999999,
+    "riskPct": 1,
+    "patterns": [
+      {
+        "name": "Doji",
+        "type": "neutral",
+        "weight": 3
+      },
+      {
+        "name": "Pin Bar Bajista",
+        "type": "bear",
+        "weight": 3
+      },
+      {
+        "name": "Evening Star",
+        "type": "bear",
+        "weight": 4
+      }
+    ],
+    "auditQuality": "MEDIA",
+    "confluence": "5/5",
+    "time": "09:04 a. m.",
+    "source": "cloud",
+    "result": null,
+    "exitPrice": null,
+    "pnlPct": null
+  },
+  {
+    "id": 1780131884341,
+    "ts": 1780131884341,
+    "pair": "SOL",
+    "dir": "short",
+    "verdict": "SHORT",
+    "title": "SHORT — MEDIA CONFIANZA",
+    "conf": 85,
+    "entryPrice": 82.13,
+    "stopLoss": 83.36195,
+    "target1": 80.07674999999999,
+    "target2": 78.84479999999999,
+    "riskPct": 1,
+    "patterns": [
+      {
+        "name": "Pin Bar Bajista",
+        "type": "bear",
+        "weight": 3
+      }
+    ],
+    "auditQuality": "MEDIA",
+    "confluence": "5/5",
+    "time": "09:04 a. m.",
+    "source": "cloud",
+    "result": null,
+    "exitPrice": null,
+    "pnlPct": null
+  },
+  {
     "id": 1779839036029,
     "ts": 1779839036029,
     "pair": "XRP",
