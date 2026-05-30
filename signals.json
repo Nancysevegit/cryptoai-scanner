@@ -1,1 +1,35 @@
-[]
+[
+  {
+    "id": 1780158979169,
+    "ts": 1780158979169,
+    "pair": "BNB",
+    "dir": "long",
+    "verdict": "LONG",
+    "title": "LONG — MEDIA CONFIANZA",
+    "conf": 76,
+    "entryPrice": 705.14,
+    "stopLoss": 694.5629,
+    "target1": 722.7684999999999,
+    "target2": 733.3456,
+    "riskPct": 1,
+    "patterns": [
+      {
+        "name": "Morning Star",
+        "type": "bull",
+        "weight": 3
+      },
+      {
+        "name": "Pin Bar Bajista",
+        "type": "bear",
+        "weight": 2
+      }
+    ],
+    "auditQuality": "MEDIA",
+    "confluence": "5/5",
+    "time": "04:36 p. m.",
+    "source": "cloud",
+    "result": null,
+    "exitPrice": null,
+    "pnlPct": null
+  }
+]
