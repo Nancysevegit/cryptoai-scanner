@@ -1,5 +1,38 @@
 [
   {
+    "id": 1780184687444,
+    "ts": 1780184687444,
+    "pair": "ETH",
+    "dir": "short",
+    "verdict": "SHORT",
+    "title": "SHORT — MEDIA CONFIANZA",
+    "conf": 90,
+    "entryPrice": 2017.46,
+    "stopLoss": 2047.7218999999998,
+    "target1": 1967.0235,
+    "target2": 1936.7616,
+    "riskPct": 1,
+    "patterns": [
+      {
+        "name": "Engulfing Bajista",
+        "type": "bear",
+        "weight": 4
+      },
+      {
+        "name": "Evening Star",
+        "type": "bear",
+        "weight": 4
+      }
+    ],
+    "auditQuality": "MEDIA",
+    "confluence": "5/5",
+    "time": "11:44 p. m.",
+    "source": "cloud",
+    "result": null,
+    "exitPrice": null,
+    "pnlPct": null
+  },
+  {
     "id": 1780158979169,
     "ts": 1780158979169,
     "pair": "BNB",
