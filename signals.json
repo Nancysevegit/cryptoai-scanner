@@ -1,5 +1,109 @@
 [
   {
+    "id": 1780239830621,
+    "ts": 1780239830621,
+    "pair": "BTC",
+    "dir": "short",
+    "verdict": "SHORT",
+    "title": "SHORT — MEDIA CONFIANZA",
+    "conf": 90,
+    "entryPrice": 73521.2,
+    "stopLoss": 74624.018,
+    "target1": 71683.17,
+    "target2": 70580.352,
+    "riskPct": 1,
+    "patterns": [
+      {
+        "name": "Engulfing Bajista",
+        "type": "bear",
+        "weight": 4
+      },
+      {
+        "name": "Doji",
+        "type": "neutral",
+        "weight": 1
+      },
+      {
+        "name": "Pin Bar Bajista",
+        "type": "bear",
+        "weight": 1
+      }
+    ],
+    "auditQuality": "MEDIA",
+    "confluence": "5/5",
+    "time": "03:03 p. m.",
+    "source": "cloud",
+    "result": null,
+    "exitPrice": null,
+    "pnlPct": null
+  },
+  {
+    "id": 1780239831249,
+    "ts": 1780239831249,
+    "pair": "ETH",
+    "dir": "short",
+    "verdict": "SHORT",
+    "title": "SHORT — MEDIA CONFIANZA",
+    "conf": 82,
+    "entryPrice": 2006.35,
+    "stopLoss": 2036.4452499999998,
+    "target1": 1956.1912499999999,
+    "target2": 1926.0959999999998,
+    "riskPct": 1,
+    "patterns": [
+      {
+        "name": "Engulfing Bajista",
+        "type": "bear",
+        "weight": 3
+      }
+    ],
+    "auditQuality": "MEDIA",
+    "confluence": "5/5",
+    "time": "03:03 p. m.",
+    "source": "cloud",
+    "result": null,
+    "exitPrice": null,
+    "pnlPct": null
+  },
+  {
+    "id": 1780239833142,
+    "ts": 1780239833142,
+    "pair": "XRP",
+    "dir": "short",
+    "verdict": "SHORT",
+    "title": "SHORT — MEDIA CONFIANZA",
+    "conf": 91,
+    "entryPrice": 1.32853,
+    "stopLoss": 1.3484579499999998,
+    "target1": 1.29531675,
+    "target2": 1.2753888,
+    "riskPct": 1,
+    "patterns": [
+      {
+        "name": "Doji",
+        "type": "neutral",
+        "weight": 3
+      },
+      {
+        "name": "Pin Bar Bajista",
+        "type": "bear",
+        "weight": 3
+      },
+      {
+        "name": "Engulfing Bajista",
+        "type": "bear",
+        "weight": 4
+      }
+    ],
+    "auditQuality": "MEDIA",
+    "confluence": "5/5",
+    "time": "03:03 p. m.",
+    "source": "cloud",
+    "result": null,
+    "exitPrice": null,
+    "pnlPct": null
+  },
+  {
     "id": 1780184687444,
     "ts": 1780184687444,
     "pair": "ETH",
