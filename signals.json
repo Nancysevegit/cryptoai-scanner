@@ -30,7 +30,8 @@
     "source": "cloud",
     "result": null,
     "exitPrice": null,
-    "pnlPct": null
+    "pnlPct": null,
+    "pendingVerify": true
   },
   {
     "id": 1780158979169,
