@@ -1,5 +1,33 @@
 [
   {
+    "id": 1780253822376,
+    "ts": 1780253822376,
+    "pair": "ETH",
+    "dir": "short",
+    "verdict": "SHORT",
+    "title": "SHORT — MEDIA CONFIANZA",
+    "conf": 79,
+    "entryPrice": 1997.46,
+    "stopLoss": 2027.4218999999998,
+    "target1": 1947.5235,
+    "target2": 1917.5616,
+    "riskPct": 1,
+    "patterns": [
+      {
+        "name": "Engulfing Bajista",
+        "type": "bear",
+        "weight": 3
+      }
+    ],
+    "auditQuality": "MEDIA",
+    "confluence": "5/5",
+    "time": "06:57 p. m.",
+    "source": "cloud",
+    "result": null,
+    "exitPrice": null,
+    "pnlPct": null
+  },
+  {
     "id": 1780239830621,
     "ts": 1780239830621,
     "pair": "BTC",
@@ -35,7 +63,8 @@
     "source": "cloud",
     "result": null,
     "exitPrice": null,
-    "pnlPct": null
+    "pnlPct": null,
+    "pendingVerify": true
   },
   {
     "id": 1780239831249,
@@ -63,7 +92,8 @@
     "source": "cloud",
     "result": null,
     "exitPrice": null,
-    "pnlPct": null
+    "pnlPct": null,
+    "pendingVerify": true
   },
   {
     "id": 1780239833142,
@@ -101,7 +131,8 @@
     "source": "cloud",
     "result": null,
     "exitPrice": null,
-    "pnlPct": null
+    "pnlPct": null,
+    "pendingVerify": true
   },
   {
     "id": 1780184687444,
