@@ -1,6 +1,7 @@
-// CryptoAI Scanner v2.0 — sincronizado con app v12
-// Fixes: velas cerradas, filtro de tendencia intradía, fecha completa
-// Timeframes intradía: 1m · 5m · 15m · 1H
+// CryptoAI Scanner v3.0 — sincronizado con app v13
+// Pesos: 1m(15%) + 5m(35%) + 15m(30%) + 1H(20%) = 100%
+// Tendencia dominante con 1H+4H
+// Verificación automática de resultados cada ejecución
 
 const fetch = (...args) => import('node-fetch').then(({default: f}) => f(...args));
 const fs = require('fs');
@@ -30,13 +31,11 @@ async function kTicker(pair) {
   };
 }
 
-// ✅ FIX v2: excluir última vela (está abierta/incompleta)
 async function kOHLC(pair, interval, limit = 200) {
   const r = await fetch(`https://api.kraken.com/0/public/OHLC?pair=${pair}&interval=${interval}`);
   const d = await r.json();
   if (d.error?.length) throw new Error(d.error[0]);
   const key = Object.keys(d.result).find(k => k !== 'last');
-  // slice(-limit-1, -1) excluye la última vela abierta
   return d.result[key].slice(-limit-1, -1).map(c => ({
     t: c[0], o: parseFloat(c[1]), h: parseFloat(c[2]),
     l: parseFloat(c[3]), c: parseFloat(c[4]), v: parseFloat(c[6])
@@ -71,7 +70,6 @@ function macdCalc(c) {
   return { macd: ml, signal: sig, hist: ml - sig };
 }
 
-// ✅ FIX v2: volScore usa velas cerradas (ya excluidas en kOHLC)
 function volScore(vols) {
   if (vols.length < 2) return 1;
   const last = vols[vols.length - 1];
@@ -79,7 +77,6 @@ function volScore(vols) {
   return ma > 0 ? last / ma : 1;
 }
 
-// ✅ FIX v2: patrones en velas cerradas
 function detectPatterns(candles) {
   const P = [];
   if (candles.length < 3) return P;
@@ -135,9 +132,52 @@ function analyzeTF(candles) {
 }
 
 // ══════════════════════════════════════════
-//  AUDITORÍA INTRADÍA
+//  v13: TENDENCIA DOMINANTE 1H + 4H
 // ══════════════════════════════════════════
-function auditSignal(a1m, a5m, a15m, a1h, patterns) {
+function detectDominantTrend(c1h, c4h) {
+  const closes1h = c1h.map(c => c.c);
+  const closes4h = c4h.map(c => c.c);
+  const highs1h = c1h.map(c => c.h), lows1h = c1h.map(c => c.l);
+
+  const ema20_1h = ema(closes1h, 20), ema50_1h = ema(closes1h, 50);
+  const ema200_1h = ema(closes1h, Math.min(200, closes1h.length - 1));
+  const price1h = closes1h[closes1h.length - 1];
+  const ema20_4h = ema(closes4h, 20), ema50_4h = ema(closes4h, 50);
+  const price4h = closes4h[closes4h.length - 1];
+  const rsi1h = rsi14(closes1h);
+  const rsi4h = rsi14(closes4h);
+  const slope1h = closes1h.length >= 6
+    ? (closes1h[closes1h.length-1] - closes1h[closes1h.length-6]) / closes1h[closes1h.length-6] * 100 : 0;
+  const slope4h = closes4h.length >= 4
+    ? (closes4h[closes4h.length-1] - closes4h[closes4h.length-4]) / closes4h[closes4h.length-4] * 100 : 0;
+
+  const recentHighs = highs1h.slice(-12), recentLows = lows1h.slice(-12);
+  const hhll = recentHighs[recentHighs.length-1] < recentHighs[0] && recentLows[recentLows.length-1] < recentLows[0]
+    ? 'bear' : recentHighs[recentHighs.length-1] > recentHighs[0] && recentLows[recentLows.length-1] > recentLows[0]
+    ? 'bull' : 'neutral';
+
+  let score = 0;
+  if (price1h < ema20_1h) score -= 2; else score += 2;
+  if (price1h < ema50_1h) score -= 2; else score += 2;
+  if (price1h < ema200_1h) score -= 3; else score += 3;
+  if (ema20_1h < ema50_1h) score -= 2; else score += 2;
+  if (slope1h < -1) score -= 2; else if (slope1h > 1) score += 2;
+  if (rsi1h < 40) score -= 1; else if (rsi1h > 60) score += 1;
+  if (price4h < ema20_4h) score -= 3; else score += 3;
+  if (price4h < ema50_4h) score -= 3; else score += 3;
+  if (slope4h < -1.5) score -= 3; else if (slope4h > 1.5) score += 3;
+  if (rsi4h < 40) score -= 2; else if (rsi4h > 60) score += 2;
+  if (hhll === 'bear') score -= 3; else if (hhll === 'bull') score += 3;
+
+  const strength = Math.min(Math.round(Math.abs(score) / 28 * 100), 99);
+  const dir = score <= -8 ? 'bear' : score >= 8 ? 'bull' : 'neutral';
+  return { dir, strength, score, slope1h, slope4h, rsi1h, rsi4h, hhll };
+}
+
+// ══════════════════════════════════════════
+//  AUDITORÍA
+// ══════════════════════════════════════════
+function auditSignal(a1m, a5m, a15m, a1h, patterns, trend) {
   const dirs = [a1m.dir, a5m.dir, a15m.dir, a1h.dir];
   const longCount = dirs.filter(d => d === 'L').length;
   const shortCount = dirs.filter(d => d === 'S').length;
@@ -146,47 +186,46 @@ function auditSignal(a1m, a5m, a15m, a1h, patterns) {
   const volOk = a5m.VS > 0.8;
   const rsiOk = mainDir === 'L' ? a5m.RSI < 75 : a5m.RSI > 25;
   const macdOk = mainDir === 'L' ? a5m.macd.hist > 0 : a5m.macd.hist < 0;
-  const hasStrong = patterns.some(p => STRONG_PATS.includes(p.name));
+  const trendAligned = (mainDir === 'L' && trend.dir === 'bull') ||
+                       (mainDir === 'S' && trend.dir === 'bear') ||
+                       trend.dir === 'neutral';
   const hardFails = [!confluenceOk, !volOk, !rsiOk, !macdOk].filter(Boolean).length;
   const quality = hardFails === 0 ? 'ALTA' : hardFails === 1 ? 'MEDIA' : 'BAJA';
-  return { quality, hardFails, mainDir, longCount, shortCount, confluenceOk, volOk, rsiOk, macdOk, hasStrong };
+  return { quality, hardFails, mainDir, longCount, shortCount, trendAligned };
 }
 
 // ══════════════════════════════════════════
-//  DECISIÓN CON FILTRO DE TENDENCIA
+//  DECISIÓN — pesos v13: 1m·15% 5m·35% 15m·30% 1H·20%
 // ══════════════════════════════════════════
-function buildDecision(a1m, a5m, a15m, a1h, price, audit) {
+function buildDecision(a1m, a5m, a15m, a1h, price, audit, trend) {
   if (audit.quality === 'BAJA') {
     return { verdict: 'ESPERAR', probability: 20, confidence: 'BAJA', riskPct: 0 };
   }
 
-  // Pesos intradía: 1m(25%) + 5m(35%) + 15m(25%) + 1H(15%)
-  const tot = a1m.score * 0.25 + a5m.score * 0.35 + a15m.score * 0.25 + a1h.score * 0.15;
+  // ✅ v13: pesos actualizados y tendencia dominante aporta al score
+  const trendBonus = trend.dir === 'bull' ? trend.strength / 100 * 2.5
+                   : trend.dir === 'bear' ? -trend.strength / 100 * 2.5 : 0;
+  const tot = a1m.score * 0.15 + a5m.score * 0.35 + a15m.score * 0.30 + a1h.score * 0.20 + trendBonus * 0.10;
   let verdict = tot > 1.2 ? 'LONG' : tot < -1.2 ? 'SHORT' : 'ESPERAR';
-  const prob = Math.min(Math.max(Math.abs(tot) / 8 * 100, 40), 88);
+  let prob = Math.min(Math.max(Math.abs(tot) / 8 * 100, 40), 90);
 
-  // ✅ FIX v2: FILTRO DE TENDENCIA
-  // Contexto basado en 1H
-  const macroCtx = a1h.score > 1 ? 'bull' : a1h.score < -1 ? 'bear' : 'neutral';
-
-  // En contexto alcista: ignorar SHORT salvo >90% confianza
-  if (macroCtx === 'bull' && verdict === 'SHORT' && prob < 90) {
+  // Filtro de tendencia dominante fuerte
+  if (trend.dir === 'bear' && verdict === 'LONG' && trend.strength >= 60) {
     verdict = 'ESPERAR';
-    console.log(`    → Filtro tendencia: contexto 1H alcista, SHORT ignorado (${prob.toFixed(0)}% < 90%)`);
+    console.log(`    → Tendencia bajista fuerte (${trend.strength}%), LONG ignorado`);
   }
-  // En contexto bajista: ignorar LONG salvo >90% confianza
-  if (macroCtx === 'bear' && verdict === 'LONG' && prob < 90) {
+  if (trend.dir === 'bull' && verdict === 'SHORT' && trend.strength >= 60) {
     verdict = 'ESPERAR';
-    console.log(`    → Filtro tendencia: contexto 1H bajista, LONG ignorado (${prob.toFixed(0)}% < 90%)`);
+    console.log(`    → Tendencia alcista fuerte (${trend.strength}%), SHORT ignorado`);
   }
-  // RSI extremo: no entrar
+  // RSI extremo
   if (verdict === 'LONG' && a5m.RSI > 72) {
     verdict = 'ESPERAR';
-    console.log(`    → RSI 5m sobrecomprado (${a5m.RSI.toFixed(0)}), LONG ignorado`);
+    console.log(`    → RSI sobrecomprado (${a5m.RSI.toFixed(0)}), LONG ignorado`);
   }
   if (verdict === 'SHORT' && a5m.RSI < 28) {
     verdict = 'ESPERAR';
-    console.log(`    → RSI 5m sobrevendido (${a5m.RSI.toFixed(0)}), SHORT ignorado`);
+    console.log(`    → RSI sobrevendido (${a5m.RSI.toFixed(0)}), SHORT ignorado`);
   }
 
   const riskPct = audit.quality === 'ALTA' ? 2 : 1;
@@ -195,7 +234,11 @@ function buildDecision(a1m, a5m, a15m, a1h, price, audit) {
   const tp1 = isL ? price * 1.015 : price * 0.985;
   const tp2 = isL ? price * 1.025 : price * 0.975;
 
-  return { verdict, probability: Math.round(prob), confidence: audit.quality, riskPct, entry: price, stopLoss: sl, target1: tp1, target2: tp2, macroCtx };
+  return {
+    verdict, probability: Math.round(prob), confidence: audit.quality,
+    riskPct, entry: price, stopLoss: sl, target1: tp1, target2: tp2,
+    trendDir: trend.dir, trendStrength: trend.strength,
+  };
 }
 
 // ══════════════════════════════════════════
@@ -203,13 +246,39 @@ function buildDecision(a1m, a5m, a15m, a1h, price, audit) {
 // ══════════════════════════════════════════
 async function scanAll() {
   const now = new Date();
-  console.log(`\n🔍 CryptoAI Scanner v2.0 — ${now.toLocaleTimeString('es-AR')}`);
-  console.log(`📅 Fecha: ${now.toLocaleDateString('es-AR')}`);
-  console.log(`✅ Usando velas cerradas + filtro de tendencia intradía\n`);
+  console.log(`\n🔍 CryptoAI Scanner v3.0 — ${now.toLocaleTimeString('es-AR')}`);
+  console.log(`📅 ${now.toLocaleDateString('es-AR')} | Pesos: 1m·15% 5m·35% 15m·30% 1H·20%\n`);
 
   let existing = [];
-  try { existing = JSON.parse(fs.readFileSync('signals.json', 'utf8')); } catch(e) {}
+  try { existing = JSON.parse(fs.readFileSync('signals.json', 'utf8')); } catch(e) { existing = []; }
 
+  // ══════════════════════════════════════════
+  //  1. VERIFICAR SEÑALES PENDIENTES PRIMERO
+  // ══════════════════════════════════════════
+  let verified = 0;
+  for (const sig of existing) {
+    if (!sig.result && Date.now() >= (sig.verifyAt || sig.ts + 900000)) {
+      try {
+        await new Promise(r => setTimeout(r, 300));
+        const tick = await kTicker(PAIRS[sig.pair] || sig.pair);
+        const pnl = sig.dir === 'long'
+          ? (tick.price - sig.entryPrice) / sig.entryPrice * 100
+          : (sig.entryPrice - tick.price) / sig.entryPrice * 100;
+        sig.result = pnl > 0 ? 'win' : 'loss';
+        sig.exitPrice = parseFloat(tick.price.toFixed(2));
+        sig.pnlPct = parseFloat(pnl.toFixed(2));
+        verified++;
+        console.log(`  ✔ Verificado ${sig.pair} ${sig.dir}: ${sig.result} (${pnl > 0 ? '+' : ''}${pnl.toFixed(2)}%) | entrada ${sig.entryPrice} → salida ${tick.price.toFixed(2)}`);
+      } catch(e) {
+        console.log(`  ⚠ No se pudo verificar ${sig.pair}: ${e.message}`);
+      }
+    }
+  }
+  if (verified > 0) console.log(`\n  📊 ${verified} señal(es) verificada(s)\n`);
+
+  // ══════════════════════════════════════════
+  //  2. ESCANEAR NUEVAS SEÑALES
+  // ══════════════════════════════════════════
   const newSignals = [];
 
   for (const [short, krakenPair] of Object.entries(PAIRS)) {
@@ -217,44 +286,41 @@ async function scanAll() {
       console.log(`  Analizando ${short}...`);
       const tick = await kTicker(krakenPair);
 
-      // ✅ FIX v2: timeframes intradía (sin 4H ni 1D)
-      const [c1m, c5m, c15m, c1h] = await Promise.all([
+      // v13: fetch 4H para tendencia dominante
+      const [c1m, c5m, c15m, c1h, c4h] = await Promise.all([
         kOHLC(krakenPair, 1, 100),
         kOHLC(krakenPair, 5, 120),
         kOHLC(krakenPair, 15, 150),
         kOHLC(krakenPair, 60, 150),
+        kOHLC(krakenPair, 240, 100),
       ]);
 
       const a1m = analyzeTF(c1m), a5m = analyzeTF(c5m);
       const a15m = analyzeTF(c15m), a1h = analyzeTF(c1h);
 
-      // Recolectar patrones de velas cerradas
+      // Tendencia dominante
+      const trend = detectDominantTrend(c1h, c4h);
+      console.log(`    Tendencia: ${trend.dir} (${trend.strength}%) | RSI5m: ${a5m.RSI.toFixed(0)} | Vol: ${a5m.VS.toFixed(2)}x`);
+
       const allPats = [];
       [[a5m,4],[a15m,3],[a1m,2],[a1h,1]].forEach(([a,w]) => {
         a.patterns.forEach(p => allPats.push({...p, weight: w}));
       });
       const dispPats = allPats.filter((v,i,a) => a.findIndex(t => t.name === v.name) === i).slice(0, 6);
 
-      const audit = auditSignal(a1m, a5m, a15m, a1h, dispPats);
-      const decision = buildDecision(a1m, a5m, a15m, a1h, tick.price, audit);
+      const audit = auditSignal(a1m, a5m, a15m, a1h, dispPats, trend);
+      const decision = buildDecision(a1m, a5m, a15m, a1h, tick.price, audit, trend);
 
-      console.log(`    RSI 5m: ${a5m.RSI.toFixed(0)} | Vol: ${a5m.VS.toFixed(2)}x | Contexto 1H: ${decision.macroCtx || 'neutral'}`);
-
-      // Solo guardar señales de calidad ≥75%
+      // Solo guardar señales ≥75% y calidad MEDIA o ALTA
       if (decision.verdict !== 'ESPERAR' && decision.probability >= 75) {
-        const recent = existing.find(s =>
-          s.pair === short &&
-          Date.now() - s.ts < 1800000 // 30 min entre señales del mismo par
-        );
-
+        const recent = existing.find(s => s.pair === short && Date.now() - s.ts < 1800000);
         if (!recent) {
-          // ✅ FIX v2: guardar fecha completa
           const sigNow = new Date();
           const dateStr = sigNow.toLocaleDateString('es-AR', {day:'2-digit', month:'2-digit', year:'2-digit'});
           const timeStr = sigNow.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'});
 
           const signal = {
-            id: Date.now(),
+            id: Date.now() + Math.floor(Math.random() * 1000),
             ts: Date.now(),
             pair: short,
             dir: decision.verdict === 'LONG' ? 'long' : 'short',
@@ -262,29 +328,31 @@ async function scanAll() {
             title: `${decision.verdict} — ${decision.confidence} CONFIANZA`,
             conf: decision.probability,
             entryPrice: tick.price,
-            stopLoss: decision.stopLoss,
-            target1: decision.target1,
-            target2: decision.target2,
+            stopLoss: parseFloat(decision.stopLoss.toFixed(2)),
+            target1: parseFloat(decision.target1.toFixed(2)),
+            target2: parseFloat(decision.target2.toFixed(2)),
             riskPct: decision.riskPct,
             patterns: dispPats.slice(0, 3),
             auditQuality: audit.quality,
             confluence: `${Math.max(audit.longCount, audit.shortCount)}/4`,
-            date: dateStr,       // ✅ fecha dd/mm/aa
-            time: timeStr,       // ✅ hora hh:mm
+            trend: decision.trendDir,
+            trendStrength: decision.trendStrength,
+            date: dateStr,
+            time: timeStr,
             datetime: dateStr + ' ' + timeStr,
-            verifyAt: Date.now() + 900000, // verificar en 15 minutos
+            verifyAt: Date.now() + 900000, // 15 minutos
             source: 'cloud',
             result: null,
             exitPrice: null,
             pnlPct: null,
           };
           newSignals.push(signal);
-          console.log(`  ✅ ${short}: ${decision.verdict} ${decision.probability}% — ${decision.confidence} | ${dateStr} ${timeStr}`);
+          console.log(`  ✅ ${short}: ${decision.verdict} ${decision.probability}% — ${decision.confidence} | ${timeStr}`);
         } else {
-          console.log(`  ⏭ ${short}: señal reciente, skip`);
+          console.log(`  ⏭ ${short}: señal reciente (${Math.round((Date.now()-recent.ts)/60000)}min), skip`);
         }
       } else {
-        console.log(`  ⏸ ${short}: ${decision.verdict} — filtrado`);
+        console.log(`  ⏸ ${short}: ${decision.verdict} ${decision.probability}% — no cumple umbral`);
       }
 
       await new Promise(r => setTimeout(r, 600));
@@ -294,25 +362,19 @@ async function scanAll() {
     }
   }
 
-  // Verificar señales pendientes a 15 minutos
-  for (const sig of existing) {
-    if (!sig.result && Date.now() >= (sig.verifyAt || sig.ts + 900000)) {
-      try {
-        const tick = await kTicker(PAIRS[sig.pair] || sig.pair);
-        const pnl = sig.dir === 'long'
-          ? (tick.price - sig.entryPrice) / sig.entryPrice * 100
-          : (sig.entryPrice - tick.price) / sig.entryPrice * 100;
-        sig.result = pnl > 0 ? 'win' : 'loss';
-        sig.exitPrice = tick.price;
-        sig.pnlPct = pnl;
-        console.log(`  🔍 Verificado ${sig.pair}: ${sig.result} (${pnl > 0 ? '+' : ''}${pnl.toFixed(2)}%)`);
-      } catch(e) {}
-    }
-  }
-
-  const combined = [...newSignals, ...existing].slice(0, 50);
+  // ══════════════════════════════════════════
+  //  3. GUARDAR
+  // ══════════════════════════════════════════
+  const combined = [...newSignals, ...existing].slice(0, 60);
   fs.writeFileSync('signals.json', JSON.stringify(combined, null, 2));
-  console.log(`\n✅ Scanner v2.0 completado. ${newSignals.length} señales nuevas. Total: ${combined.length}`);
+
+  const wins = combined.filter(s => s.result === 'win').length;
+  const losses = combined.filter(s => s.result === 'loss').length;
+  const pending = combined.filter(s => !s.result).length;
+  console.log(`\n✅ Scanner v3.0 completado.`);
+  console.log(`   Nuevas: ${newSignals.length} | Verificadas hoy: ${verified}`);
+  console.log(`   Historial: ✅${wins} aciertos / ❌${losses} fallos / ⏳${pending} pendientes`);
+  if (wins + losses > 0) console.log(`   Win rate: ${(wins/(wins+losses)*100).toFixed(0)}%`);
 }
 
 scanAll().catch(err => {
