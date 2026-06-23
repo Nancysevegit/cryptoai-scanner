@@ -183,13 +183,13 @@ function auditSignal(a1m, a5m, a15m, a1h, patterns, trend) {
   const shortCount = dirs.filter(d => d === 'S').length;
   const mainDir = longCount > shortCount ? 'L' : 'S';
   const confluenceOk = longCount >= 3 || shortCount >= 3;
-  const volOk = a5m.VS > 0.8;
+  const volOk = a5m.VS > 0.5; // v13: umbral más permisivo, 0.5x en vez de 0.8x
   const rsiOk = mainDir === 'L' ? a5m.RSI < 75 : a5m.RSI > 25;
   const macdOk = mainDir === 'L' ? a5m.macd.hist > 0 : a5m.macd.hist < 0;
   const trendAligned = (mainDir === 'L' && trend.dir === 'bull') ||
                        (mainDir === 'S' && trend.dir === 'bear') ||
                        trend.dir === 'neutral';
-  const hardFails = [!confluenceOk, !volOk, !rsiOk, !macdOk].filter(Boolean).length;
+  const hardFails = [!confluenceOk, !rsiOk, !macdOk].filter(Boolean).length; // volumen ya no es hard fail
   const quality = hardFails === 0 ? 'ALTA' : hardFails === 1 ? 'MEDIA' : 'BAJA';
   return { quality, hardFails, mainDir, longCount, shortCount, trendAligned };
 }
@@ -261,12 +261,19 @@ async function scanAll() {
       try {
         await new Promise(r => setTimeout(r, 300));
         const tick = await kTicker(PAIRS[sig.pair] || sig.pair);
+        // ✅ Fix: validar que precio de verificación sea coherente con entrada
+        const priceDiff = Math.abs(tick.price - sig.entryPrice) / sig.entryPrice * 100;
+        if (priceDiff > 20) {
+          sig.result = 'loss'; sig.exitPrice = tick.price; sig.pnlPct = 0;
+          console.log(`  ⚠ ${sig.pair}: precio corrupto (entrada ${sig.entryPrice} vs actual ${tick.price.toFixed(4)}), descartado`);
+          verified++; continue;
+        }
         const pnl = sig.dir === 'long'
           ? (tick.price - sig.entryPrice) / sig.entryPrice * 100
           : (sig.entryPrice - tick.price) / sig.entryPrice * 100;
         sig.result = pnl > 0 ? 'win' : 'loss';
-        sig.exitPrice = parseFloat(tick.price.toFixed(2));
-        sig.pnlPct = parseFloat(pnl.toFixed(2));
+        sig.exitPrice = parseFloat(tick.price.toFixed(4));
+        sig.pnlPct = parseFloat(Math.max(-15, Math.min(15, pnl)).toFixed(2));
         verified++;
         console.log(`  ✔ Verificado ${sig.pair} ${sig.dir}: ${sig.result} (${pnl > 0 ? '+' : ''}${pnl.toFixed(2)}%) | entrada ${sig.entryPrice} → salida ${tick.price.toFixed(2)}`);
       } catch(e) {
@@ -311,8 +318,8 @@ async function scanAll() {
       const audit = auditSignal(a1m, a5m, a15m, a1h, dispPats, trend);
       const decision = buildDecision(a1m, a5m, a15m, a1h, tick.price, audit, trend);
 
-      // Solo guardar señales ≥75% y calidad MEDIA o ALTA
-      if (decision.verdict !== 'ESPERAR' && decision.probability >= 75) {
+      // Guardar señales ≥65% y calidad MEDIA o ALTA
+      if (decision.verdict !== 'ESPERAR' && decision.probability >= 65) {
         const recent = existing.find(s => s.pair === short && Date.now() - s.ts < 1800000);
         if (!recent) {
           const sigNow = new Date();
