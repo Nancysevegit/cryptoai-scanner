@@ -38,8 +38,8 @@
     "datetime": "21/08/26 01:52 p. m.",
     "verifyAt": 1787321240020,
     "source": "cloud",
-    "result": null,
-    "exitPrice": null,
-    "pnlPct": null
+    "result": "loss",
+    "exitPrice": 76566.1,
+    "pnlPct": -1.13
   }
 ]
