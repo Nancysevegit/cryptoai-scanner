@@ -1,1 +1,45 @@
-[]
+[
+  {
+    "id": 1787320340673,
+    "ts": 1787320340020,
+    "pair": "BTC",
+    "dir": "long",
+    "verdict": "LONG",
+    "title": "LONG — ALTA CONFIANZA",
+    "conf": 66,
+    "entryPrice": 77438.6,
+    "stopLoss": 76509.34,
+    "target1": 78600.18,
+    "target2": 79374.57,
+    "riskPct": 2,
+    "patterns": [
+      {
+        "name": "Martillo",
+        "type": "bull",
+        "weight": 3
+      },
+      {
+        "name": "Pin Bar Alcista",
+        "type": "bull",
+        "weight": 3
+      },
+      {
+        "name": "Engulfing Alcista",
+        "type": "bull",
+        "weight": 3
+      }
+    ],
+    "auditQuality": "ALTA",
+    "confluence": "4/4",
+    "trend": "bull",
+    "trendStrength": 93,
+    "date": "21/08/26",
+    "time": "01:52 p. m.",
+    "datetime": "21/08/26 01:52 p. m.",
+    "verifyAt": 1787321240020,
+    "source": "cloud",
+    "result": null,
+    "exitPrice": null,
+    "pnlPct": null
+  }
+]
