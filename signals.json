@@ -38,9 +38,9 @@
     "datetime": "22/08/26 07:31 p. m.",
     "verifyAt": 1787427995849,
     "source": "cloud",
-    "result": null,
-    "exitPrice": null,
-    "pnlPct": null
+    "result": "win",
+    "exitPrice": 0.0936,
+    "pnlPct": 0.64
   },
   {
     "id": 1787320340673,
