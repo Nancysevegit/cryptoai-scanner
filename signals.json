@@ -1,5 +1,48 @@
 [
   {
+    "id": 1787427096395,
+    "ts": 1787427095849,
+    "pair": "DOGE",
+    "dir": "long",
+    "verdict": "LONG",
+    "title": "LONG — MEDIA CONFIANZA",
+    "conf": 66,
+    "entryPrice": 0.0930225,
+    "stopLoss": 0.09,
+    "target1": 0.09,
+    "target2": 0.1,
+    "riskPct": 1,
+    "patterns": [
+      {
+        "name": "Engulfing Alcista",
+        "type": "bull",
+        "weight": 4
+      },
+      {
+        "name": "Morning Star",
+        "type": "bull",
+        "weight": 4
+      },
+      {
+        "name": "Marubozu Alcista",
+        "type": "bull",
+        "weight": 4
+      }
+    ],
+    "auditQuality": "MEDIA",
+    "confluence": "4/4",
+    "trend": "bull",
+    "trendStrength": 64,
+    "date": "22/08/26",
+    "time": "07:31 p. m.",
+    "datetime": "22/08/26 07:31 p. m.",
+    "verifyAt": 1787427995849,
+    "source": "cloud",
+    "result": null,
+    "exitPrice": null,
+    "pnlPct": null
+  },
+  {
     "id": 1787320340673,
     "ts": 1787320340020,
     "pair": "BTC",
